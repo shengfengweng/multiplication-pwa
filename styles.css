@@ -1,0 +1,16 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: linear-gradient(to right, #f0f8ff, #e6e6fa);
+}
+.app {
+  margin-top: 5vh;
+}
+input {
+  font-size: 1.2rem;
+  padding: 0.5em;
+}
+button {
+  font-size: 1.2rem;
+  margin-left: 0.5em;
+}
