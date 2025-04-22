@@ -17,21 +17,24 @@
     .leaderboard { margin-top: 30px; text-align: left; display: inline-block; }
     .leaderboard h2 { margin-bottom: 5px; }
   </style>
-</head>
-<body>
-  <h1>史弟夫數學</h1>
-  <h1>九九乘法練習</h1>
-  <div class="question" id="question"></div>
-  <input type="number" id="answer" />
-  <button onclick="submitAnswer()">提交</button>
-  <div id="result"></div>
+  <script type="module">
+    // Firebase 初始化
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-  <div class="leaderboard">
-    <h2>🏆 排行榜（本機）</h2>
-    <ol id="leaderboard"></ol>
-  </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkjM45c64PMZ9sB98nno2mBdw63NKySpM",
+      authDomain: "multiplication-game-28f44.firebaseapp.com",
+      projectId: "multiplication-game-28f44",
+      storageBucket: "multiplication-game-28f44.firebasestorage.app",
+      messagingSenderId: "857874715387",
+      appId: "1:857874715387:web:0a4745e22f4096ba8cd65e",
+      measurementId: "G-V7CH2HWY8F"
+    };
 
-  <script>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     let score = 0;
     let total = 0;
     let num1, num2;
@@ -47,7 +50,7 @@
       answerEl.focus();
     }
 
-    function submitAnswer() {
+    async function submitAnswer() {
       const userAns = parseInt(answerEl.value);
       total++;
       if (userAns === num1 * num2) {
@@ -59,7 +62,7 @@
 
       if (total >= 10) {
         const name = prompt(`答題結束！你的分數是 ${score}/10。請輸入你的名字：`);
-        saveScore(name || '匿名', score);
+        if (name) await saveScore(name, score);
         showLeaderboard();
         score = 0;
         total = 0;
@@ -67,27 +70,47 @@
       generateQuestion();
     }
 
-    function saveScore(name, score) {
-      const records = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-      records.push({ name, score });
-      records.sort((a, b) => b.score - a.score);
-      const top5 = records.slice(0, 5);
-      localStorage.setItem('leaderboard', JSON.stringify(top5));
+    async function saveScore(name, score) {
+      try {
+        await addDoc(collection(db, "leaderboard"), {
+          name,
+          score,
+          timestamp: new Date()
+        });
+      } catch (e) {
+        console.error("Error adding score: ", e);
+      }
     }
 
-    function showLeaderboard() {
-      const records = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+    async function showLeaderboard() {
+      const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(5));
+      const querySnapshot = await getDocs(q);
       const ol = document.getElementById('leaderboard');
       ol.innerHTML = '';
-      records.forEach((r, i) => {
+      querySnapshot.forEach((doc) => {
         const li = document.createElement('li');
-        li.textContent = `${r.name}：${r.score} 分`;
+        li.textContent = `${doc.data().name}：${doc.data().score} 分`;
         ol.appendChild(li);
       });
     }
 
+    window.submitAnswer = submitAnswer;
     generateQuestion();
     showLeaderboard();
   </script>
+</head>
+<body>
+  <h1>史弟夫數學</h1>
+  <h1>九九乘法練習</h1>
+  <div class="question" id="question"></div>
+  <input type="number" id="answer" />
+  <button onclick="submitAnswer()">提交</button>
+  <div id="result"></div>
+
+  <div class="leaderboard">
+    <h2>🏆 排行榜（Firebase）</h2>
+    <ol id="leaderboard"></ol>
+  </div>
 </body>
 </html>
+
