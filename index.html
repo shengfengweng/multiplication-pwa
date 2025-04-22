@@ -3,27 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>史弟夫數學九九乘法小遊戲</title>
-  <link rel="manifest" href="manifest.json">
+  <title>九九乘法練習</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#4caf50" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="乘法練習" />
   <link rel="apple-touch-icon" href="icon-192.png" />
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 20px; }
+    input, button { font-size: 1.2em; }
+    .question { font-size: 2em; margin: 20px 0; }
+    .leaderboard { margin-top: 30px; text-align: left; display: inline-block; }
+    .leaderboard h2 { margin-bottom: 5px; }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <h1>史弟夫數學九九乘法小遊戲</h1>
-    <div id="question">題目載入中...</div>
-    <input type="number" id="answer" placeholder="輸入答案" />
-    <button onclick="checkAnswer()">送出</button>
-    <div id="result"></div>
-    <div id="score">得分：0</div>
-    <div id="timer">倒數：30 秒</div>
+  <h1>史弟夫數學</h1>
+  <h1>九九乘法練習</h1>
+  <div class="question" id="question"></div>
+  <input type="number" id="answer" />
+  <button onclick="submitAnswer()">提交</button>
+  <div id="result"></div>
+
+  <div class="leaderboard">
+    <h2>🏆 排行榜（本機）</h2>
+    <ol id="leaderboard"></ol>
   </div>
-  <script src="script.js"></script>
+
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+    let score = 0;
+    let total = 0;
+    let num1, num2;
+    const questionEl = document.getElementById('question');
+    const resultEl = document.getElementById('result');
+    const answerEl = document.getElementById('answer');
+
+    function generateQuestion() {
+      num1 = Math.floor(Math.random() * 9) + 1;
+      num2 = Math.floor(Math.random() * 9) + 1;
+      questionEl.textContent = `${num1} × ${num2} = ?`;
+      answerEl.value = '';
+      answerEl.focus();
     }
+
+    function submitAnswer() {
+      const userAns = parseInt(answerEl.value);
+      total++;
+      if (userAns === num1 * num2) {
+        score++;
+        resultEl.textContent = '✅ 答對了！';
+      } else {
+        resultEl.textContent = `❌ 答錯了，正確答案是 ${num1 * num2}`;
+      }
+
+      if (total >= 10) {
+        const name = prompt(`答題結束！你的分數是 ${score}/10。請輸入你的名字：`);
+        saveScore(name || '匿名', score);
+        showLeaderboard();
+        score = 0;
+        total = 0;
+      }
+      generateQuestion();
+    }
+
+    function saveScore(name, score) {
+      const records = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      records.push({ name, score });
+      records.sort((a, b) => b.score - a.score);
+      const top5 = records.slice(0, 5);
+      localStorage.setItem('leaderboard', JSON.stringify(top5));
+    }
+
+    function showLeaderboard() {
+      const records = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      const ol = document.getElementById('leaderboard');
+      ol.innerHTML = '';
+      records.forEach((r, i) => {
+        const li = document.createElement('li');
+        li.textContent = `${r.name}：${r.score} 分`;
+        ol.appendChild(li);
+      });
+    }
+
+    generateQuestion();
+    showLeaderboard();
   </script>
 </body>
 </html>
