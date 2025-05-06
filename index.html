@@ -43,13 +43,12 @@
     const answerEl = document.getElementById('answer');
 
     function generateQuestion() {
-      ten = Math.floor(Math.random()*9) + 1;
+      nten = Math.floor(Math.random()*9) + 1;
       n1  = Math.floor(Math.random()*9) + 1;
       n2  = 10 - n1;
-      num1 = ten * 10 + n1;
-      num2 = ten * 10 + n2;
-      console.log(num1);
-      console.log(num2);
+      num1 = nten * 10 + n1;
+      num2 = nten * 10 + n2;
+      
       questionEl.textContent = `${num1} × ${num2} = ?`;
       answerEl.value = '';
       answerEl.focus();
